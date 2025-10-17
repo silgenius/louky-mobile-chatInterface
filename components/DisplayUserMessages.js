@@ -1,11 +1,17 @@
 import React, { useRef } from 'react';
 import { FlatList } from 'react-native';
-import { useSelector } from 'react-redux';
-import AnimatedMessage from './AnimatedMessage';
+import { useSelector, useDispatch } from 'react-redux';
 
-export default function DisplayUserMessages({ id }) {
+import AnimatedMessage from './AnimatedMessage';
+import useSocketListeners from '../hooks/useSocketListener';
+import messageEvents from '../socket/events/messageEvents';
+
+export default function DisplayUserMessages({ conversationId }) {
   const flatListRef = useRef(null);
-  const messages = useSelector((state) => state.messages.messages);
+  const dispatch = useDispatch()
+  const messages = useSelector((state) => state.messages[conversationId]);
+  const userId = useSelector((state) => state.user.id);
+  // useSocketListeners(messageEvents(dispatch));
 
   const scrollToItem = (id) => {
     const index = messages.findIndex(
@@ -25,7 +31,7 @@ export default function DisplayUserMessages({ id }) {
         return (
           <AnimatedMessage
             message={item}
-            isOwnMessage={item.sender_id === 'user_anon1'}
+            isOwnMessage={item.sender_id === userId}
             onPress={scrollToItem}
           />
         );
