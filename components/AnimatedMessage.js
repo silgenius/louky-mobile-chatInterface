@@ -5,14 +5,29 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+
 import { useDispatch } from 'react-redux';
 
 import MessageTemplate from './AnimatedMessageTemplate';
-import { createTagMessage } from '../store/messagesSlice';
+import { createTagMessage } from '../store/conversationSlice';
 
 export default function Message({ message, isOwnMessage, onPress }) {
   const dispatch = useDispatch();
   const offsetX = useSharedValue(0);
+
+  const dispatchTaggedMessage = () => {
+    dispatch(
+      createTagMessage({
+        taggedMessage: {
+          id: message.id,
+          conversationId: message.conversationId,
+          message: message.message,
+          sender_id: message.sender_id,
+        },
+      })
+    );
+  };
 
   const animatedStyles = useAnimatedStyle(() => {
     return {
@@ -30,13 +45,7 @@ export default function Message({ message, isOwnMessage, onPress }) {
     })
     .onEnd(() => {
       offsetX.value = 0; // reset offset to initial positon
-      dispatch(
-        createTagMessage({
-          id: message.id,
-          message: message.message,
-          sender_id: message.sender_id,
-        })
-      );
+      scheduleOnRN(dispatchTaggedMessage); // run on RN runtime
     });
 
   return (
