@@ -9,6 +9,7 @@ import AnimatedMessageInput from '../components/AnimatedMessageInput';
 import MessengerProfileSection from '../components/MessengerProfileSection';
 
 export default function UserMessagesScreen() {
+  const conversationId = 'conversationId'; // should update dynamically
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView
@@ -19,9 +20,9 @@ export default function UserMessagesScreen() {
           <MessengerProfileSection />
         </View>
         <View style={{ flex: 1 }}>
-          <DisplayUserMessages /> {/*id={id} message Id to be passed*/}
+          <DisplayUserMessages conversationId={conversationId} />
         </View>
-        <AnimatedMessageInput /> {/*id={id} conversation Id to be passed*/}
+        <AnimatedMessageInput conversationId={conversationId} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
