@@ -10,24 +10,30 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { createMessage, removeTagMessage } from '../store/messagesSlice';
+import { createMessage } from '../store/messagesSlice';
+import { removeTagMessage } from '../store/conversationSlice';
 
-export default function MessageInput() {
+export default function MessageInput({ conversationId }) {
   const [newMessage, setNewMessage] = useState('');
   const scale = useRef(new Animated.Value(1)).current;
   const inputRef = useRef(null);
-  const reply = useSelector((state) => state.messages.taggedMessage);
+  const reply = useSelector(
+    (state) => state.conversations[conversationId].taggedMessage
+  );
   const dispatch = useDispatch();
+
   const sendMessage = (newMessage) => {
     const message = {
       id: Date.now().toString(),
+      conversationId: conversationId,
       message: newMessage,
       sender_id: 'user_anon1',
       replied_to: reply,
       timeStamp: '2025-10-13T14:02:00Z',
     };
     dispatch(createMessage({ message }));
-    dispatch(removeTagMessage());
+    dispatch(removeTagMessage({conversationId: conversationId }));
+    // Create Logic to send message
   };
 
   const handlePressIn = () => {
@@ -59,9 +65,9 @@ export default function MessageInput() {
   };
 
   const handleCancelTaggedMessage = () => {
-    dispatch(removeTagMessage());
-    if (!newMessage.trim()) handleInputBlur()
-    else handleInputFocus()
+    dispatch(removeTagMessage({ conversationId }));
+    if (!newMessage.trim()) handleInputBlur();
+    else handleInputFocus();
   };
 
   useEffect(() => {
