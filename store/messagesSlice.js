@@ -5,32 +5,19 @@ import messages from '../utils/messages';
 const messagesSlice = createSlice({
   name: 'messages',
   initialState: {
-    messages: messages,
-    isMessageTagged: false,
-    taggedMessage: {},
+    conversationId: messages,
   },
   reducers: {
     createMessage: (state, action) => {
       const { message } = action.payload;
-      state.messages = [message, ...state.messages];
-    },
-    getMessages: (state, action) => {},
-    createTagMessage: (state, action) => {
-      state.isMessageTagged = true;
-      state.taggedMessage = action.payload;
-    },
-    removeTagMessage: (state) => {
-      state.isMessageTagged = !state.isMessageTagged;
-      state.taggedMessage = {};
+      const { conversationId } = message;
+      state[conversationId] = [message, ...state[conversationId]];
     },
   },
 });
 
 export const {
   createMessage,
-  createTagMessage,
-  removeTagMessage,
-  getMessages,
 } = messagesSlice.actions;
 
 export default messagesSlice;
