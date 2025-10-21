@@ -15,6 +15,7 @@ import { createTagMessage } from '../store/conversationSlice';
 export default function Message({ message, isOwnMessage, onPress }) {
   const dispatch = useDispatch();
   const offsetX = useSharedValue(0);
+  const messageStatus = useSharedValue(message.status);
 
   const dispatchTaggedMessage = () => {
     dispatch(
@@ -39,13 +40,18 @@ export default function Message({ message, isOwnMessage, onPress }) {
     .onStart((_e) => {}) // Disables onPress Logic
     .onUpdate((e) => {
       offsetX.value =
-        e.translationX >= 0 && e.translationX <= 70
+        e.translationX >= 0 &&
+        e.translationX <= 70 &&
+        messageStatus.value !== 'pending' &&
+        messageStatus.value !== 'failed'
           ? e.translationX
           : offsetX.value;
     })
     .onEnd(() => {
-      offsetX.value = 0; // reset offset to initial positon
-      scheduleOnRN(dispatchTaggedMessage); // run on RN runtime
+      if (offsetX.value > 0) {
+        scheduleOnRN(dispatchTaggedMessage); // Only dispatch if dragged
+      }
+      offsetX.value = 0; // Reset offset
     });
 
   return (
