@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from 'react-native-paper';
 
-import { createMessage } from '../store/messagesSlice';
+import { sendMessage, createMessage } from '../store/messagesSlice';
 import { removeTagMessage } from '../store/conversationSlice';
 
 export default function MessageInput({ conversationId }) {
@@ -18,22 +19,23 @@ export default function MessageInput({ conversationId }) {
   const scale = useRef(new Animated.Value(1)).current;
   const inputRef = useRef(null);
   const reply = useSelector(
-    (state) => state.conversations[conversationId].taggedMessage
+    (state) => state.conversations.byId[conversationId].taggedMessage
   );
   const dispatch = useDispatch();
+  const theme = useTheme();
 
-  const sendMessage = (newMessage) => {
+  const handleMessageCreation = (text) => {
     const message = {
-      id: Date.now().toString(),
+      id: Date.now().toString(), // temp id
       conversationId: conversationId,
-      message: newMessage,
+      message: text,
       sender_id: 'user_anon1',
       replied_to: reply,
-      timeStamp: '2025-10-13T14:02:00Z',
+      status: 'pending',
     };
     dispatch(createMessage({ message }));
-    dispatch(removeTagMessage({conversationId: conversationId }));
-    // Create Logic to send message
+    dispatch(removeTagMessage({ conversationId: conversationId }));
+    dispatch(sendMessage(message));
   };
 
   const handlePressIn = () => {
@@ -53,7 +55,7 @@ export default function MessageInput({ conversationId }) {
   };
 
   const handlePress = () => {
-    sendMessage(newMessage);
+    handleMessageCreation(newMessage);
     setNewMessage('');
   };
 
@@ -77,7 +79,14 @@ export default function MessageInput({ conversationId }) {
   return (
     <View style={styles.newMessageContainer}>
       {reply?.message && (
-        <View style={styles.replyContainer}>
+        <View
+          style={[
+            styles.replyContainer,
+            {
+              backgroundColor: theme.colors.onPrimary,
+              borderLeftColor: theme.colors.primaryContainer,
+            },
+          ]}>
           <View style={styles.replyHeader}>
             <Text style={styles.replySender}>
               {'user_anon1' === reply.sender_id ? 'You' : reply.sender_id}
@@ -110,7 +119,7 @@ export default function MessageInput({ conversationId }) {
           onPressOut={handlePressOut}
           disabled={!newMessage.trim()}>
           <Animated.View style={[styles.button, { transform: [{ scale }] }]}>
-            <MaterialIcons name="send" size={24} color={'green'} />
+            <MaterialIcons name="send" size={24} color={theme.colors.primary} />
           </Animated.View>
         </Pressable>
       </View>
@@ -159,10 +168,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   replyContainer: {
-    backgroundColor: '#e0f7fa',
     padding: 8,
     borderLeftWidth: 4,
-    borderLeftColor: 'green',
     borderRadius: 8,
     marginBottom: 6,
   },
