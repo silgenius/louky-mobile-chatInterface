@@ -2,43 +2,71 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
+import MessageStatusIcon from './MessageStatusIcon';
 
-// Wrap <View> outside and apply margin and stuff to avoid swiping below components.
-const MessageTemplate = ({ style, message, isOwnMessage, onPress }) => (
-  <View style={styles.messageWrapper}>
-    <Animated.View
-      style={[
-        style,
-        isOwnMessage ? styles.rightAlign : styles.leftAlign,
-        { flexDirection: 'row' },
-      ]}>
-      <View
+import { useTheme } from 'react-native-paper';
+
+export default function MessageTemplate({
+  style,
+  message,
+  isOwnMessage,
+  onPress,
+}) {
+  const theme = useTheme();
+  return (
+    <View style={styles.messageWrapper}>
+      <Animated.View
         style={[
-          styles.messageContainer,
-          isOwnMessage ? styles.ownMessage : styles.receivedMessage,
+          style,
+          isOwnMessage ? styles.rightAlign : styles.leftAlign,
+          { flexDirection: 'row' },
         ]}>
-        {message.replied_to?.message ? (
-          <View style={styles.replyContainer}>
-            <TouchableOpacity onPress={() => onPress(message?.replied_to?.id)}>
-              <Text
-                style={styles.replyText}
-                numberOfLines={2}
-                ellipsizeMode="tail">
-                {message?.replied_to?.message}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
+        <View
+          style={[
+            styles.messageContainer,
+            isOwnMessage ? styles.ownMessage : styles.receivedMessage,
+            {
+              backgroundColor: isOwnMessage
+                ? theme.colors.primaryContainer
+                : theme.colors.onPrimary,
+            },
+          ]}>
+          {message.replied_to?.message ? (
+            <View
+              style={[
+                styles.replyContainer,
+                {
+                  ...(isOwnMessage
+                    ? { backgroundColor: theme.colors.onPrimary }
+                    : {
+                        backgroundColor: 'rgb(247, 255, 255)',
+                        borderLeftWidth: 3,
+                        borderLeftColor: theme.colors.primaryContainer,
+                      }),
+                },
+              ]}>
+              <TouchableOpacity
+                onPress={() => onPress(message?.replied_to?.id)}>
+                <Text
+                  style={styles.replyText}
+                  numberOfLines={2}
+                  ellipsizeMode="tail">
+                  {message?.replied_to?.message}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
-        <Text style={styles.messageText}>{message.message}</Text>
-        <View style={styles.statusRow}>
-          <Text style={styles.timeStamp}>11:30 pm</Text>
-          <Ionicons name="checkmark-circle-sharp" size={12} color="green" />
+          <Text style={styles.messageText}>{message.message}</Text>
+          <View style={styles.statusRow}>
+            <Text style={styles.timeStamp}>11:30 pm</Text>
+            <MessageStatusIcon status={message.status} size={12} />
+          </View>
         </View>
-      </View>
-    </Animated.View>
-  </View>
-);
+      </Animated.View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   messageWrapper: {
@@ -62,7 +90,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   ownMessage: {
-    backgroundColor: '#DCF8C6',
     borderTopRightRadius: 1,
   },
   receivedMessage: {
@@ -70,7 +97,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 1,
   },
   replyContainer: {
-    backgroundColor: '#F1F1F1',
     padding: 6,
     borderRadius: 8,
     marginBottom: 4,
@@ -97,5 +123,3 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
 });
-
-export default MessageTemplate;
